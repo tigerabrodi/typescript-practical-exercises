@@ -1,0 +1,32 @@
+{
+  "salesData": [
+    {
+      "saleId": "sale001",
+      "product": {
+        "name": "Wireless Mouse",
+        "category": "Electronics",
+        "price": 29.99
+      },
+      "customer": {
+        "name": "John Doe",
+        "location": "New York"
+      },
+      "quantity": 2,
+      "date": "2023-11-15"
+    },
+    {
+      "saleId": "sale002",
+      "product": {
+        "name": "Bluetooth Headphones",
+        "category": "Electronics",
+        "price": 59.99
+      },
+      "customer": {
+        "name": "Jane Smith",
+        "location": "California"
+      },
+      "quantity": 1,
+      "date": "2023-11-16"
+    }
+  ]
+}
