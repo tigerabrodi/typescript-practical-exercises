@@ -11,61 +11,58 @@
 
 type TypeOfActivity = 'pageView' | 'buttonClick' | 'formSubmit'
 
-const typeOfActivities: Array<TypeOfActivity> = [
-  'pageView',
-  'buttonClick',
-  'formSubmit',
-]
+const activities = new Map<TypeOfActivity, Array<Activity>>()
 
 type Activity = {
   userId: string
   timestamp: number
 }
 
-const activities = new Map<TypeOfActivity, Array<Activity>>()
-
 export function recordActivity(userId: string, typeOfActivity: TypeOfActivity) {
-  cleanup()
+  const now = Date.now()
+  const activity = { userId, timestamp: now }
 
-  const activity = {
-    userId,
-    timestamp: Date.now(),
+  if (!activities.has(typeOfActivity)) {
+    activities.set(typeOfActivity, [])
   }
 
-  const activitiesForType = activities.get(typeOfActivity) || []
-  activitiesForType.unshift(activity)
-  activities.set(typeOfActivity, activitiesForType)
+  const activitiesForType = activities.get(typeOfActivity) as Array<Activity>
+  activitiesForType.push(activity) // Push new activity to the end
+
+  // Clean up if the array length exceeds a certain number (e.g., 100)
+  if (activitiesForType.length > 100) {
+    cleanUp(typeOfActivity)
+  }
 }
 
 export function provideSummaryOfActivities() {
-  cleanup()
-
+  const tenMinutesAgo = Date.now() - 10 * 60 * 1000
   const summary: Record<TypeOfActivity, number> = {
     pageView: 0,
     buttonClick: 0,
     formSubmit: 0,
   }
 
-  typeOfActivities.forEach((typeOfActivity) => {
-    const activitiesForType = activities.get(typeOfActivity) || []
-    summary[typeOfActivity] = activitiesForType.length
-  })
+  for (const [typeOfActivity, activitiesForType] of activities) {
+    summary[typeOfActivity] = activitiesForType.filter(
+      (activity) => activity.timestamp > tenMinutesAgo
+    ).length
+  }
 
   return `Summary of activities in the last 10 minutes: ${JSON.stringify(
     summary
   )}`
 }
 
-function cleanup() {
-  const now = Date.now()
-  const tenMinutesAgo = now - 10 * 60 * 1000
+function cleanUp(typeOfActivity: TypeOfActivity) {
+  const tenMinutesAgo = Date.now() - 10 * 60 * 1000
+  const activitiesForType = activities.get(typeOfActivity) as Array<Activity>
 
-  typeOfActivities.forEach((typeOfActivity) => {
-    const activitiesForType = activities.get(typeOfActivity) || []
-    // If timestamp is more than 10 minutes ago, remove it
-    const activitiesAfterTenMinutesAgo = activitiesForType.filter(
-      (activity) => activity.timestamp > tenMinutesAgo
-    )
-    activities.set(typeOfActivity, activitiesAfterTenMinutesAgo)
-  })
+  // Remove activities older than 10 minutes
+  while (
+    activitiesForType.length &&
+    activitiesForType[0].timestamp < tenMinutesAgo
+  ) {
+    activitiesForType.shift()
+  }
 }
