@@ -7,13 +7,13 @@
  *
  */
 
-const attempts = new Map<string, Array<Date>>()
+const attempts = new Map<string, Array<number>>()
 
 export const trackLoginAttempt = (userId: string) => {
   const attemptsForUser = attempts.get(userId) || []
 
   // Add the current attempt to the beginning of the array
-  attemptsForUser.unshift(new Date())
+  attemptsForUser.unshift(Date.now())
 
   // Only keep the last 5 attempts
   if (attemptsForUser.length > 5) {
