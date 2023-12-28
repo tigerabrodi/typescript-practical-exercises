@@ -24,6 +24,7 @@ export function describe(testSuiteName: string, func: () => void) {
   console.log(`beginning test suite ${testSuiteName}`)
   try {
     func()
+    console.log(`successfully completed test suite ${testSuiteName}`)
   } catch (error) {
     if (error instanceof CustomDescribeError) {
       console.error(
@@ -34,24 +35,21 @@ export function describe(testSuiteName: string, func: () => void) {
 
     throw error
   }
-  console.log(`successfully completed test suite ${testSuiteName}`)
 }
 
 export function it(testCaseName: string, func: () => void) {
   console.log(`beginning test case ${testCaseName}`)
   try {
     func()
+    console.log(`successfully completed test case ${testCaseName}`)
   } catch (error) {
     if (error instanceof CustomDescribeError) {
-      throw new CustomDescribeError(
-        `${testCaseName} with error message ${error.message}`,
-        testCaseName
-      )
+      // Re-throw the error with the test case name
+      throw new CustomDescribeError(error.message, testCaseName)
     }
 
     throw error
   }
-  console.log(`successfully completed test case ${testCaseName}`)
 }
 
 export function expect(actual: unknown) {
@@ -59,7 +57,6 @@ export function expect(actual: unknown) {
     toExist() {
       const isValueExist = actual !== null && actual !== undefined
       if (!isValueExist) {
-        console.log(`expected value to exist but got ${JSON.stringify(actual)}`)
         throw new CustomDescribeError(
           `expected value to exist but got ${JSON.stringify(actual)}`
         )
@@ -69,26 +66,17 @@ export function expect(actual: unknown) {
     toBe(expected: unknown) {
       const isValueEqual = actual === expected
       if (!isValueEqual) {
-        console.log(
-          `expected ${JSON.stringify(actual)} to be ${JSON.stringify(expected)}`
-        )
         throw new CustomDescribeError(
-          `expected ${JSON.stringify(actual)} to be ${expected}`
+          `expected ${JSON.stringify(actual)} to be ${JSON.stringify(expected)}`
         )
       }
 
       return true
     },
-    // one of the typeofs
     toBeType(expected: TypeOf) {
       const isTypeSame = typeof actual === expected
       const typeOfActual = typeof actual
       if (!isTypeSame) {
-        console.log(
-          `expected ${JSON.stringify(
-            actual
-          )} to be type ${expected} but got ${typeOfActual}`
-        )
         throw new CustomDescribeError(
           `expected ${JSON.stringify(
             actual
