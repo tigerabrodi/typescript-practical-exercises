@@ -1,34 +1,29 @@
-function throttle(fn, delay) {
-  let lastCallInMs = 0
-  let timeoutId = null
+export function throttle(fn, delay) {
+  let timerId: ReturnType<typeof setTimeout> | null = null
+  let lastCalledTime = 0
 
-  function throttledFunction(...args) {
-    // `throttledFunction` is needed because we need to be able to cancel the timeout
-    const now = Date.now()
+  const throttledFn = function (...args: Array<any>) {
+    const currentTime = Date.now()
+    const timeSinceLastCall = currentTime - lastCalledTime
+    const delayRemaining = delay - timeSinceLastCall
 
-    if (now - lastCallInMs < delay) {
-      // If the delay has not passed, we need to set a timeout, but we also need to cancel the previous one, because we don't want to call the function twice
-      if (timeoutId) {
-        clearTimeout(timeoutId) // Cancel the previous timeout if it exists
-      }
-
-      timeoutId = setTimeout(() => {
-        lastCallInMs = now // Update the last call time
-        fn.apply(this, args) // Call the function with `this` context set to whatever calling it and the arguments
-      }, delay - (now - lastCallInMs))
+    // if delayRemaining <= 0, then the function was last called at least delay ms ago, we're ready to call it again
+    if (delayRemaining <= 0) {
+      lastCalledTime = currentTime
+      fn.apply(this, ...args)
     } else {
-      lastCallInMs = now
-      fn.apply(this, args)
+      clearTimeout(timerId!)
+
+      timerId = setTimeout(() => {
+        lastCalledTime = currentTime
+        fn.apply(this, ...args)
+      }, delayRemaining) // we do not want to use delay here, because we want to execute the function as soon as possible
     }
   }
 
-  throttledFunction.cancel = function () {
-    // Functions are objects, so we can add properties to them
-    if (timeoutId) {
-      clearTimeout(timeoutId)
-      timeoutId = null
-    }
+  throttledFn.cancel = function () {
+    clearTimeout(timerId!)
   }
 
-  return throttledFunction
+  return throttledFn
 }
