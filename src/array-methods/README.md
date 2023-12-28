@@ -14,3 +14,6 @@ const newArray = array.map((value, index, arr) => {
   return value * 2
 })
 ```
+
+- reduce uses the first element as accumulator if no initial value is provided
+- reduce callback functions returns entire accumulator modified, not just the value, so if we implement it from scratch, we simply set the accumulator to the return value of the callback function
