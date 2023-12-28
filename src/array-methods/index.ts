@@ -47,6 +47,37 @@ Array.prototype.myFilter = function <T>(
   return result
 }
 
-// Array.prototype.myReduce = function (callback, initialValue) {
-//   // Write your code here.
-// }
+Array.prototype.myReduce = function <T, U>(
+  callback: (
+    accumulator: U,
+    currentValue: T,
+    currentIndex: number,
+    array: Array<T>
+  ) => U,
+  initialValue?: U
+): U {
+  let accumulator: U | T | undefined = initialValue
+  let startIndex = 0
+
+  // Means that the user didn't pass an initial value
+  if (accumulator === undefined) {
+    // Means that the array is empty, we can't reduce an empty array
+    if (this.length === 0) {
+      throw new TypeError('Reduce of empty array with no initial value')
+    }
+    accumulator = this[0] // The first element of the array if the user didn't pass an initial value
+    startIndex = 1 // We start from the second element of the array because we already have the first element in the accumulator, this is intentional and how reduce works
+  }
+
+  for (let i = startIndex; i < this.length; i++) {
+    accumulator = callback(accumulator as U, this[i], i, this)
+  }
+
+  return accumulator as U
+}
+
+// Example of myReduce
+
+const numbers = [1, 2, 3, 4, 5]
+
+const sum = numbers.myReduce((acc, curr) => acc + curr, 0) // `acc + curr` is the callback returned
